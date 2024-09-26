@@ -1,0 +1,11 @@
+<!-- partials/short_url.html -->
+{% if error %}
+    <div class="notification is-danger">
+        {{ error }}
+    </div>
+{% endif %}
+{% if short_url %}
+    <div class="notification is-primary">
+        Your short URL: <a href="{{ short_url }}">{{ short_url }}</a>
+    </div>
+{% endif %}

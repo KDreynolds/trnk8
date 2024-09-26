@@ -1,0 +1,40 @@
+<!-- index.html -->
+{% extends "base.html" %}
+{% block content %}
+<section class="hero is-fullheight-with-navbar is-light">
+    <div class="hero-body">
+        <div class="container has-text-centered">
+            <h1 class="title is-2">Simplify Your Links with Trnk8</h1>
+            <h2 class="subtitle is-5">Shorten URLs effortlessly</h2>
+
+            {% if error %}
+                <div class="notification is-danger">
+                    {{ error }}
+                </div>
+            {% endif %}
+            {% if short_url %}
+                <div class="notification is-primary">
+                    Your short URL: <a href="{{ short_url }}">{{ short_url }}</a>
+                </div>
+            {% endif %}
+
+            <div class="columns is-centered">
+                <div class="column is-half">
+                    <form method="post" hx-post="/" hx-target="#short-url" hx-swap="innerHTML">
+                        <div class="field has-addons">
+                            <div class="control is-expanded">
+                                <input class="input is-medium" type="url" name="url" placeholder="Enter a long URL" required>
+                            </div>
+                            <div class="control">
+                                <button class="button is-primary is-medium">Shorten</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="short-url"></div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,32 @@
+/* styles.css */
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+.navbar {
+    background-color: #2C3E50;
+}
+
+.navbar-item, .navbar-burger {
+    color: #ECF0F1;
+}
+
+.navbar-item:hover {
+    background-color: #34495E;
+}
+
+.footer {
+    background-color: #2C3E50;
+    color: #ECF0F1;
+    padding: 2rem 1.5rem 2rem;
+}
+
+.footer a {
+    color: #ECF0F1;
+}
+
+.logo-image {
+    width: 30%;
+    height: auto;
+    max-width: 100%;
+}
