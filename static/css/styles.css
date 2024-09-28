@@ -65,3 +65,82 @@ body {
 #short-url {
     margin-top: 1rem;
 }
+
+.navbar {
+    background-color: transparent;
+    padding: 1rem;
+}
+
+.navbar-item .button {
+    background-color: #3498db;
+    color: #ECF0F1;
+    transition: background-color 0.3s ease;
+}
+
+.navbar-item .button:hover {
+    background-color: #2980b9;
+}
+
+.login-form {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.login-form .input {
+    margin-bottom: 1rem;
+}
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 250px;
+    background-color: rgba(52, 152, 219, 0.9);
+    padding: 2rem;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.sidebar-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.menu-label {
+    color: #ECF0F1;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.menu-list a {
+    color: #ECF0F1;
+    padding: 0.5rem 0;
+    display: flex;
+    align-items: center;
+}
+
+.menu-list a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu-list a i {
+    margin-right: 0.5rem;
+}
+
+.main-container {
+    transition: margin-left 0.3s ease;
+}
+
+@media screen and (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.is-active {
+        transform: translateX(0);
+    }
+}

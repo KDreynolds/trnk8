@@ -6,9 +6,36 @@
     <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
 </head>
 <body class="has-background-black">
     <div class="main-container">
+        {% if user %}
+        <div class="sidebar">
+            <div class="sidebar-content">
+                <p class="menu-label">
+                    Welcome, {{ user.email }}
+                </p>
+                <ul class="menu-list">
+                    <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="/account"><i class="fas fa-user"></i> Account</a></li>
+                    <li><a href="/links"><i class="fas fa-link"></i> Links</a></li>
+                    <li><a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </div>
+        </div>
+        {% else %}
+        <nav class="navbar is-transparent">
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    {% if request.url.path != '/login' and request.url.path != '/register' %}
+                        <a href="/login" class="button is-primary">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+        {% endif %}
+
         <!-- Logo Section -->
         <section class="section pt-6">
             <div class="container has-text-centered">
