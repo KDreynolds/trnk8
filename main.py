@@ -10,6 +10,7 @@ import random
 from dotenv import load_dotenv
 import validators
 from supabase import create_client, Client
+from datetime import datetime
 
 load_dotenv()
 
@@ -96,15 +97,19 @@ async def read_root(request: Request, user: dict = Depends(get_current_user)):
     return templates.TemplateResponse("index.html", {"request": request, "user": user})
 
 @app.post("/", response_class=HTMLResponse)
-async def create_short_url(request: Request, url: str = Form(...), user: dict = Depends(get_current_user)):
+async def create_short_url(
+    request: Request, 
+    url: str = Form(...), 
+    user: dict = Depends(get_current_user)
+):
     if not user:
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
-    
+
     # Validate URL
     if not url.startswith(('http://', 'https://')):
         url = 'http://' + url
     if not validators.url(url):
-        return templates.TemplateResponse("index.html", {"request": request, "error": "Invalid URL."})
+        return templates.TemplateResponse("index.html", {"request": request, "error": "Invalid URL.", "user": user})
 
     # Generate unique short code
     async with httpx.AsyncClient() as client:
@@ -122,26 +127,30 @@ async def create_short_url(request: Request, url: str = Form(...), user: dict = 
                 if not response.json():
                     break  # Short code is unique
 
-            # Insert into Supabase
+            # Insert into Supabase with user_id
             insert_response = await client.post(
                 f"{SUPABASE_URL}/rest/v1/urls",
-                json={"original_url": url, "short_code": short_code},
+                json={
+                    "original_url": url, 
+                    "short_code": short_code, 
+                    "user_id": user.id  # Include user_id
+                },
                 headers=headers
             )
 
             if insert_response.status_code != 201:
-                return templates.TemplateResponse("index.html", {"request": request, "error": "Failed to save URL."})
+                return templates.TemplateResponse("index.html", {"request": request, "error": "Failed to save URL.", "user": user})
 
         except Exception as e:
             print(f"Exception occurred: {e}")
-            return templates.TemplateResponse("index.html", {"request": request, "error": "An error occurred."})
+            return templates.TemplateResponse("index.html", {"request": request, "error": "An error occurred.", "user": user})
 
     short_url = f"{request.url.scheme}://{request.url.netloc}/{short_code}"
 
     if 'HX-Request' in request.headers:
-        return templates.TemplateResponse("partials/short_url.html", {"request": request, "short_url": short_url})
+        return templates.TemplateResponse("partials/short_url.html", {"request": request, "short_url": short_url, "user": user})
 
-    return templates.TemplateResponse("index.html", {"request": request, "short_url": short_url})
+    return templates.TemplateResponse("index.html", {"request": request, "short_url": short_url, "user": user})
         
 @app.get("/account", response_class=HTMLResponse)
 async def account(request: Request, user: dict = Depends(get_current_user)):
@@ -153,7 +162,27 @@ async def account(request: Request, user: dict = Depends(get_current_user)):
 async def links(request: Request, user: dict = Depends(get_current_user)):
     if not user:
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
-    return templates.TemplateResponse("links.html", {"request": request, "user": user})
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                f"{SUPABASE_URL}/rest/v1/urls",
+                params={
+                    "select": "original_url,short_code,created_at",
+                    "user_id": f"eq.{user.id}",
+                    "order": "created_at.desc"
+                },
+                headers=headers
+            )
+            if response.status_code != 200:
+                print(f"Error fetching links: {response.text}")
+                raise HTTPException(status_code=500, detail="Internal Server Error")
+            links = response.json()
+        except Exception as e:
+            print(f"Exception occurred: {e}")
+            raise HTTPException(status_code=500, detail="Internal Server Error")
+
+    return templates.TemplateResponse("links.html", {"request": request, "user": user, "links": links})
         
 
 @app.get("/about", response_class=HTMLResponse)

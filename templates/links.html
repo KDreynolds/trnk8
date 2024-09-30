@@ -1,7 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container has-text-centered">
+<div class="container">
     <h1 class="title is-2 has-text-light">Your Links</h1>
-    <!-- Add a table or list of user's shortened links here -->
+    {% if links %}
+        <table class="table is-fullwidth is-striped is-hoverable">
+            <thead>
+                <tr>
+                    <th>Short URL</th>
+                    <th>Original URL</th>
+                    <th>Date Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for link in links %}
+                    <tr>
+                        <td>
+                            <a href="/{{ link.short_code }}" target="_blank">
+                                {{ request.url.scheme }}://{{ request.url.netloc }}/{{ link.short_code }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ link.original_url }}" target="_blank">{{ link.original_url }}</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="has-text-light">You have not shortened any URLs yet.</p>
+    {% endif %}
 </div>
 {% endblock %}
