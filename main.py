@@ -142,28 +142,6 @@ async def create_short_url(request: Request, url: str = Form(...), user: dict = 
         return templates.TemplateResponse("partials/short_url.html", {"request": request, "short_url": short_url})
 
     return templates.TemplateResponse("index.html", {"request": request, "short_url": short_url})
-
-@app.get("/{short_code}")
-async def redirect_url(short_code: str):
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(
-                f"{SUPABASE_URL}/rest/v1/urls",
-                params={"select": "original_url", "short_code": f"eq.{short_code}"},
-                headers=headers
-            )
-            if response.status_code != 200:
-                print(f"Error fetching original URL: {response.text}")
-                raise HTTPException(status_code=404, detail="URL not found")
-            data = response.json()
-            if data:
-                original_url = data[0]['original_url']
-                return RedirectResponse(original_url)
-            else:
-                raise HTTPException(status_code=404, detail="URL not found")
-        except Exception as e:
-            print(f"Exception occurred: {e}")
-            raise HTTPException(status_code=500, detail="Internal Server Error")
         
 @app.get("/account", response_class=HTMLResponse)
 async def account(request: Request, user: dict = Depends(get_current_user)):
@@ -196,4 +174,26 @@ async def terms(request: Request):
 @app.get("/privacy", response_class=HTMLResponse)
 async def privacy(request: Request):
     return templates.TemplateResponse("privacy.html", {"request": request})
+
+@app.get("/{short_code}")
+async def redirect_url(short_code: str):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                f"{SUPABASE_URL}/rest/v1/urls",
+                params={"select": "original_url", "short_code": f"eq.{short_code}"},
+                headers=headers
+            )
+            if response.status_code != 200:
+                print(f"Error fetching original URL: {response.text}")
+                raise HTTPException(status_code=404, detail="URL not found")
+            data = response.json()
+            if data:
+                original_url = data[0]['original_url']
+                return RedirectResponse(original_url)
+            else:
+                raise HTTPException(status_code=404, detail="URL not found")
+        except Exception as e:
+            print(f"Exception occurred: {e}")
+            raise HTTPException(status_code=500, detail="Internal Server Error")
 
