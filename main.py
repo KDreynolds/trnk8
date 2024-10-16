@@ -37,6 +37,11 @@ async def get_current_user(request: Request):
     try:
         token = token.split("Bearer ")[1]
         user = supabase.auth.get_user(token)
+        if user.user:
+            # Fetch username from custom users table
+            response = supabase.table("users").select("username").eq("id", user.user.id).execute()
+            if response.data:
+                user.user.username = response.data[0]['username']
         return user.user
     except Exception as e:
         print(f"Token validation error: {str(e)}")
@@ -66,14 +71,40 @@ async def register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
 @app.post("/register")
-async def register(request: Request, email: str = Form(...), password: str = Form(...)):
+async def register(request: Request, username: str = Form(...), email: str = Form(...), password: str = Form(...)):
     try:
-        response = supabase.auth.sign_up({"email": email, "password": password})
-        if response.user:
-            access_token = response.session.access_token
-            redirect = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-            redirect.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
-            return redirect
+        # Check if username already exists
+        response = supabase.table("users").select("username").eq("username", username).execute()
+        if response.data:
+            return templates.TemplateResponse("register.html", {"request": request, "error": "Username already exists"})
+        
+        # Register the user
+        auth_response = supabase.auth.sign_up({
+            "email": email,
+            "password": password,
+            "options": {
+                "data": {
+                    "username": username
+                }
+            }
+        })
+        
+        if auth_response.user:
+            # Insert username into a custom users table
+            supabase.table("users").insert({"id": auth_response.user.id, "username": username}).execute()
+            
+            # Check if email confirmation is required
+            if auth_response.session is None:
+                return templates.TemplateResponse("register.html", {
+                    "request": request, 
+                    "success": "Registration successful. Please check your email to confirm your account."
+                })
+            else:
+                # If session is available, proceed with login
+                access_token = auth_response.session.access_token
+                redirect = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+                redirect.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
+                return redirect
         else:
             return templates.TemplateResponse("register.html", {"request": request, "error": "Registration failed. Please try again."})
     except Exception as e:

@@ -1,35 +1,21 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container has-text-centered">
-    <h1 class="title is-2 has-text-light">Simplify Your Links with Trnk8</h1>
-    <h2 class="subtitle is-5 has-text-grey-lighter">Shorten URLs effortlessly</h2>
-
-    {% if error %}
-        <div class="notification is-danger">
-            {{ error }}
+<div class="flex flex-col items-center justify-center min-h-screen">
+    <div class="bg-white p-12 rounded-lg shadow-lg w-3/5">
+        <div class="text-center mb-6">
+            <img src="{{ url_for('static', path='images/logo-light.png') }}" alt="Logo" class="mx-auto mb-4 w-80 h-auto">
+            <p class="text-gray-600">Shorten your links with ease</p>
         </div>
-    {% endif %}
-    {% if short_url %}
-        <div class="notification is-primary">
-            Your short URL: <a href="{{ short_url }}">{{ short_url }}</a>
-        </div>
-    {% endif %}
-
-    <div class="columns is-centered">
-        <div class="column is-half">
-            <form method="post" hx-post="/" hx-target="#short-url" hx-swap="innerHTML">
-                <div class="field has-addons">
-                    <div class="control is-expanded">
-                        <input class="input is-medium" type="url" name="url" placeholder="Enter a long URL" required>
-                    </div>
-                    <div class="control">
-                        <button class="button is-primary is-medium">Shorten</button>
-                    </div>
-                </div>
-            </form>
-        </div>
+        <form method="post" hx-post="/" hx-target="#short-url" hx-swap="innerHTML">
+            <div class="flex items-center border border-gray-300 rounded mb-4">
+                <span class="px-3 text-gray-500">
+                    <i class="fas fa-link"></i>
+                </span>
+                <input class="flex-grow p-2 bg-white text-gray-700 focus:outline-none" type="url" name="url" placeholder="Enter your long URL here" required>
+            </div>
+            <button class="w-full bg-black text-white py-2 rounded">Shorten URL</button>
+        </form>
+        <div id="short-url" class="mt-4"></div>
     </div>
-
-    <div id="short-url"></div>
 </div>
 {% endblock %}
