@@ -38,18 +38,19 @@ async def get_current_user(request: Request):
         token = token.split("Bearer ")[1]
         user = supabase.auth.get_user(token)
         if user.user:
-            # Fetch username from custom users table
-            response = supabase.table("users").select("username").eq("id", user.user.id).execute()
-            if response.data:
-                user.user.username = response.data[0]['username']
-        return user.user
+            # Access display_name from user_metadata
+            display_name = user.user.user_metadata.get("display_name", "Unknown")
+            # Add display_name to the user object
+            user_dict = user.user.__dict__
+            user_dict['display_name'] = display_name
+            return user_dict
     except Exception as e:
         print(f"Token validation error: {str(e)}")
         return None
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse("login.html", {"request": request, "user": None})
 
 @app.post("/login")
 async def login(request: Request, email: str = Form(...), password: str = Form(...)):
@@ -73,42 +74,37 @@ async def register_page(request: Request):
 @app.post("/register")
 async def register(request: Request, username: str = Form(...), email: str = Form(...), password: str = Form(...)):
     try:
-        # Check if username already exists
-        response = supabase.table("users").select("username").eq("username", username).execute()
-        if response.data:
-            return templates.TemplateResponse("register.html", {"request": request, "error": "Username already exists"})
-        
-        # Register the user
+        print(f"Attempting to register user with email: {email} and username: {username}")  # Debugging line
+
         auth_response = supabase.auth.sign_up({
             "email": email,
             "password": password,
             "options": {
                 "data": {
-                    "username": username
+                    "display_name": username
                 }
             }
         })
-        
+
         if auth_response.user:
-            # Insert username into a custom users table
-            supabase.table("users").insert({"id": auth_response.user.id, "username": username}).execute()
-            
-            # Check if email confirmation is required
             if auth_response.session is None:
                 return templates.TemplateResponse("register.html", {
                     "request": request, 
                     "success": "Registration successful. Please check your email to confirm your account."
                 })
             else:
-                # If session is available, proceed with login
                 access_token = auth_response.session.access_token
+                print(f"Access token obtained: {access_token}")  # Debugging line
                 redirect = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
                 redirect.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
                 return redirect
         else:
+            print("Registration failed: No user returned")  # Debugging line
             return templates.TemplateResponse("register.html", {"request": request, "error": "Registration failed. Please try again."})
     except Exception as e:
-        print(f"Registration error: {str(e)}")
+        print(f"Registration error: {str(e)}")  # Debugging line
+        if "already registered" in str(e):
+            return templates.TemplateResponse("register.html", {"request": request, "error": "Email already registered"})
         return templates.TemplateResponse("register.html", {"request": request, "error": f"Registration failed: {str(e)}"})
 
 @app.get("/logout")
@@ -124,7 +120,7 @@ async def favicon():
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request, user: dict = Depends(get_current_user)):
     if not user:
-        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
+        return templates.TemplateResponse("landing.html", {"request": request})
     return templates.TemplateResponse("index.html", {"request": request, "user": user})
 
 @app.post("/", response_class=HTMLResponse)
@@ -200,7 +196,7 @@ async def links(request: Request, user: dict = Depends(get_current_user)):
                 f"{SUPABASE_URL}/rest/v1/urls",
                 params={
                     "select": "original_url,short_code,created_at",
-                    "user_id": f"eq.{user.id}",
+                    "user_id": f"eq.{user['id']}",  # Access id as a dictionary key
                     "order": "created_at.desc"
                 },
                 headers=headers

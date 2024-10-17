@@ -5,15 +5,17 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}">
     <script src="https://unpkg.com/htmx.org@1.8.4"></script>
-    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/e49bbc8207.js" crossorigin="anonymous"></script>
 </head>
 <body class="bg-black text-gray-900">
+    {% if user %}
     <div class="absolute left-0 top-1/2 transform -translate-y-1/2 space-y-4 pl-4">
         <a href="/" class="block text-white hover:text-gray-400 py-2">Home</a>
         <a href="/account" class="block text-white hover:text-gray-400 py-2">Account</a>
         <a href="/links" class="block text-white hover:text-gray-400 py-2">Links</a>
         <a href="/logout" class="block text-white hover:text-gray-400 py-2">Logout</a>
     </div>
+    {% endif %}
     {% block content %}{% endblock %}
 </body>
 </html>

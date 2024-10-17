@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen bg-dark-100">
+    <div class="bg-white p-12 rounded-lg shadow-lg w-4/5 max-w-4xl">
+        <div class="text-center mb-8">
+            <img src="{{ url_for('static', path='images/logo-dark.png') }}" alt="Trnk8 Logo" class="mx-auto mb-4 w-80 h-auto">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Welcome to Trnk8</h1>
+            <p class="text-xl text-gray-600">Simplify your links, amplify your reach</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div class="text-center">
+                <i class="fas fa-link text-4xl text-blue-500 mb-2"></i>
+                <h2 class="text-xl font-semibold mb-2">Easy URL Shortening</h2>
+                <p class="text-gray-600">Create short, memorable links in seconds</p>
+            </div>
+            <div class="text-center">
+                <i class="fas fa-chart-line text-4xl text-green-500 mb-2"></i>
+                <h2 class="text-xl font-semibold mb-2">Track Your Links</h2>
+                <p class="text-gray-600">Monitor clicks and engagement effortlessly</p>
+            </div>
+            <div class="text-center">
+                <i class="fas fa-shield-alt text-4xl text-purple-500 mb-2"></i>
+                <h2 class="text-xl font-semibold mb-2">Secure & Reliable</h2>
+                <p class="text-gray-600">Your links are safe and always accessible</p>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="/register" class="bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition duration-300">Get Started for Free</a>
+            <p class="mt-4 text-gray-600">Already have an account? <a href="/login" class="text-blue-600 hover:underline">Log in</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
